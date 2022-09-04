@@ -1,6 +1,8 @@
 # novel-downloader
 
-1: Contains a python program which scrapes data from a free novel site: https://www.lightnovelpub.com 
+To run, execute command: python <absolute path of scrape-v1.py>
+
+1: Contains a python program which scrapes data from a free novel site: https://vipnovel.com/ 
 
 2: Involves the use of BeautifulSoup library from python
 
