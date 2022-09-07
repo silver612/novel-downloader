@@ -1,6 +1,6 @@
 # novel-downloader
 
-To run, execute command: python <absolute path of scrape-v1.py>
+To run, execute command: python <absolute path of scrape_v1.py>
 
 1: Contains a python program which scrapes data from a free novel site: https://vipnovel.com/ 
 

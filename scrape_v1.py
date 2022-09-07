@@ -3,8 +3,9 @@ import os
 import requests
 
 class Novel:
-    def __init__(self, title, details):
+    def __init__(self, title, last_chap, details):
         self.title = title
+        self.last_chapter = last_chap
         self.details = details
 
 def get_page_content(current_page_link):
@@ -17,8 +18,7 @@ def get_page_content(current_page_link):
         novel_title = novel_details.find("div",{"class":"post-title font-title"}).find("h3", {"class":"h5"}).text.strip()
         novel_last_chapter = novel_details.find("div",{"class":"list-chapter"}).find("span", {"class":"chapter font-meta"}).text.strip()
         novel_details_link = novel_details.find("h3", {"class":"h5"}).a["href"]
-        novel_group.append(Novel(novel_title, novel_details_link))
-        print(f"Title : {novel_title} \nLast Chapter: {novel_last_chapter} \n")
+        novel_group.append(Novel(novel_title, novel_last_chapter, novel_details_link))
     
     next_page_link = current_page.find("div", {"class":"nav-previous float-left"})
     if next_page_link:
@@ -26,20 +26,25 @@ def get_page_content(current_page_link):
     else:
         return None, novel_group
 
-def print_chapter_names(details_link):
+def get_chapter_names(details_link):
+    chapter_names = []
     details_page = BeautifulSoup(requests.get(details_link).text, 'lxml')
     chapter = 1
     chapter_link = details_link + "chapter-1/"
     chapter_page = BeautifulSoup(requests.get(chapter_link).text, 'lxml')
     while chapter_page != details_page :
-        chapter_title = chapter_page.find("div", {"class":"c-breadcrumb"}).find("li", {"class":"active"}).text.strip()
-        print(f"Chapter {chapter}: {chapter_title}")
+        chapter_title = chapter_page.find("div", {"class":"c-breadcrumb"})
+        if chapter_title != None:
+            chapter_title = chapter_title.find("li", {"class":"active"}).text.strip()
+        else:
+            break
+        chapter_names.append("Chapter " + str(chapter) + ": " + chapter_title)
         chapter = chapter + 1
         chapter_link = details_link + "/chapter-" + str(chapter) + "/"
         chapter_page = BeautifulSoup(requests.get(chapter_link).text, 'lxml')
+    return chapter_names
 
 def download_novel(details_link, filename):
-    details_page = BeautifulSoup(requests.get(details_link).text, 'lxml')
     chapter = 1
     chapter_link = details_link + "chapter-1/"
     chapter_page = BeautifulSoup(requests.get(chapter_link).text, 'lxml')
@@ -59,11 +64,16 @@ current_page_link = all_novels_link
 choice = 1
 novels = []
 
-while True:
+while __name__=="__main__":
     
     if int(choice)==1 : 
-        current_page_link, novels = get_page_content(current_page_link)
         _ = os.system("cls")
+        if current_page_link==None:
+            print("No more novels available")
+        else:
+            current_page_link, novels = get_page_content(current_page_link)
+            for novel in novels:
+                print(f"Title : {novel.title} \nLast Chapter: {novel.last_chapter} \n")
     elif int(choice)==2 :
         print("Type exact novel title (without preceding or following spaces): ")
         title = input();
@@ -88,7 +98,9 @@ while True:
                 choice1 = input()
 
                 if int(choice1) == 1:
-                    print_chapter_names(goal.details)
+                    chapter_names = get_chapter_names(goal.details)
+                    for chapter_name in chapter_names:
+                        print(chapter_name)
                 elif int(choice1) == 2:
                     print("Enter file name in which to save")
                     print("Warning: If file already present, previous contents of the file will be permanently removed")
